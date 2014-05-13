@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--Page title-->
+	<title>MobileMaps &middot Geelong 3D</title>
+	
+	<!--Set page display options for mobile device -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	
+	<!--Leaflet style sheet-->
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"/>
+	
+	<!--Leaflet JavaScript code-->
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+	
+	<!--Leaflet plugin for layers-->
+	<script src="https://raw.githubusercontent.com/leaflet-extras/leaflet-providers/1.0.5/leaflet-providers.js"></script>
+	
+	<!--Leaflet plugin for 3D buildings-->
+	<script src="https://raw.githubusercontent.com/kekscom/osmbuildings/0.1.9a/dist/OSMBuildings-Leaflet.js"></script>
+	
+	<!--Load local geojson data for Geelong (var = geelong)-->
+	<script src="data/geelong-roofs-subset.geojson"></script>
+	
+	<!--Full screen map-->
+	<style>
+	body {
+		padding: 0;
+		margin: 0;
+	}
+	html, body, #map {
+		height: 100% ;
+	}
+	</style>
+	
+</head>
+
+<body>
+	<!--Put map element on the page-->
+	<div id="map"></div>
+	
+	<!--Script to load the map-->
+	<script>
+		//Constants
+		var GEELONG = [-38.15, 144.36]
+				
+		//Initialise the map
+		var map = L.map('map', {attributionControl:false}).setView(GEELONG,16);
+		
+		var attr = L.control.attribution({position: 'bottomright'}).addTo(map);
+		
+		var baseLayers = ['Stamen.Watercolor', 'Thunderforest.Landscape'];
+		
+		//Add some tiles as basemap
+		var layerControl = L.control.layers.provided(baseLayers).addTo(map);
+		
+		//Add Geelong data to the map using OSM buildings 3D visualisation
+		var osmb = new OSMBuildings(map).setData(geelong).setStyle({"wallColor": "rgba(125,125,200,0.95)", "roofColor":null});
+		
+		attr.addAttribution('3D Buildings Geelong CC-BY-3.0-AU data.gov.au');
+		
+		
+		
+	</script>
+</body>
+</html>

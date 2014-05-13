@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--Page title-->
+	<title>MobileMaps &middot Geolocation</title>
+	
+	<!--Set page display options for mobile device -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	
+	<!--Leaflet style sheet-->
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"/>
+	
+	<!--Leaflet JavaScript code-->
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+	
+	<!--Leaflet plugin for layers-->
+	<script src="https://raw.githubusercontent.com/leaflet-extras/leaflet-providers/1.0.5/leaflet-providers.js"></script>
+	
+	<!--Full screen map-->
+	<style>
+	body {
+		padding: 0;
+		margin: 0;
+	}
+	html, body, #map {
+		height: 100% ;
+	}
+	</style>
+	
+</head>
+
+<body>
+	<!--Put map element on the page-->
+	<div id="map"></div>
+	
+	<!--Script to load the map-->
+	<script>
+	
+		//Function to put user location on the map
+		function showUserLocation(e){
+			// Set the radius of location accuracy
+			var radius = e.accuracy/2;
+			console.log(e);
+			L.marker(e.latlng).addTo(map)
+				.bindPopup("You are within " + radius + " metres from this point").openPopup();
+				
+			L.circle(e.latlng, radius).addTo(map);
+		}
+	
+		//Initialise the map
+		var map = L.map('map')
+		
+		//Move map to user location
+		map.locate({setView: true, maxZoom:16});
+		map.on('locationfound', showUserLocation);
+		
+		//Add some tiles as basemap
+		L.tileLayer.provider('OpenMapSurfer.Roads').addTo(map);
+		
+	</script>
+</body>
+</html>

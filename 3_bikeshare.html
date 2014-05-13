@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!--Page title-->
+	<title>MobileMaps &middot Melbourne Bikeshare</title>
+	
+	<!--Set page display options for mobile device -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	
+	<!--Leaflet style sheet-->
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.css"/>
+	
+	<!--Leaflet JavaScript code-->
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
+	
+	<!--Leaflet plugin for layers-->
+	<script src="https://raw.githubusercontent.com/leaflet-extras/leaflet-providers/1.0.5/leaflet-providers.js"></script>
+	
+	<!--JQuery to help with JSON data-->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	
+	<!--Full screen map-->
+	<style>
+	body {
+		padding: 0;
+		margin: 0;
+	}
+	html, body, #map {
+		height: 100% ;
+	}
+	</style>
+	
+</head>
+
+<body>
+	<!--Put map element on the page-->
+	<div id="map"></div>
+	
+	<!--Script to load the map-->
+	<script>
+	
+		//Some global variables
+		var PI = 3.14159;
+		var R = 6341 //Earth radius km
+		var MELB = [-37.815762, 144.960754]
+		
+		//Initialise the map
+		var map = L.map('map').setView(MELB,13);
+		
+		//Add some tiles as basemap
+		L.tileLayer.provider('OpenMapSurfer.Roads').addTo(map);
+	
+		//Get location function
+		function getLocation(callback){
+			//Get current position of user
+				var gl = navigator.geolocation;
+				if (gl){
+					gl.getCurrentPosition(function(position){
+						//L.circle([position.coords.latitude, position.coords.longitude], 10, {
+						L.circle([MELB[0],MELB[1]], 75, {
+							stroke:true,
+							color:'red',
+							fillColor:'red',
+							fillOpacity:1
+						}).addTo(map);
+						
+						callback(MELB[0], MELB[1])
+					});
+				
+				}
+				else {
+					alert('GeoLocation not available.');
+				}
+		}
+		
+		//Get distance between two lat, long pairs
+		function haversine(lat_1, lon_1, lat_2, lon_2){
+			//Haversine forumla
+							
+			//Lat, Long  radians
+			var lat_1 = (lat_1 / 180) * PI;
+			var lon_1 = (lon_1 / 180) * PI;
+
+			var lat_2 = (lat_2 / 180) * PI;
+			var lon_2 = (lon_2 / 180) * PI;
+
+			//Delta lat, lon
+			var dlat = lat_2 - lat_1;
+			var dlon = lon_2 - lon_1;
+			
+			var a = Math.sin(dlat/2) * Math.sin(dlat/2) + Math.cos(lat_1) * Math.cos(lat_2) * Math.sin(dlon/2) * Math.sin(dlon/2)
+			
+			var c = 2* Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+			return R * c;			
+		}
+		
+		//Get stations data & calculate distance from user
+		function getStations(user_lat, user_lon){
+		
+			//Add cycle stations data
+			$.getJSON('http://whateverorigin.org/get?url=' + encodeURIComponent('http://www.melbournebikeshare.com.au/stationmap/data') + '&callback=?', function(data){
+					//Fix non-standard JSON
+					data.contents = data.contents.replace(/\\x26/g, '&');
+					data.contents = data.contents.replace(/\\/g, "");
+					
+					//Parse JSON 
+					var stations = JSON.parse(data.contents)
+				
+					//Loop through data, add points to the map and calculate distance from user
+					for (var i= 0; i < stations.length; i++){
+				
+						d = haversine(user_lat, user_lon, stations[i].lat, stations[i].long);		
+						var marker = L.marker([stations[i].lat, stations[i].long],{opacity:0.8}).bindPopup(stations[i].name+'<BR>Distance from current location: '+d.toFixed(2)+' Km');
+						marker.addTo(map);
+						}
+					});
+			}
+    
+    getLocation(getStations);	
+	</script>
+</body>
+</html>
